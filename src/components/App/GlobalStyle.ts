@@ -1,6 +1,6 @@
 import { createGlobalStyle } from "styled-components";
 
-import { skyblue } from "../colors";
+import { skyblue, applegreen } from "../colors";
 
 const Style = createGlobalStyle`
   * {
@@ -123,6 +123,50 @@ const Style = createGlobalStyle`
   .spinner {
     margin-top: 24px;
     text-align: center;
+  }
+
+   /* How it works */
+  
+  .sc-dlfnbm .ant-steps-vertical > .ant-steps-item:not(:last-child) > .ant-steps-item-container > .ant-steps-item-tail {
+    left: 50%;
+  }
+  .sc-dlfnbm .ant-steps-vertical > .ant-steps-item .ant-steps-item-icon {
+    position: absolute;
+    left: 50%;
+    margin-left: -15px;
+  }
+  .sc-dlfnbm .ant-steps-item-title {
+    padding-right: 0;
+  }
+  .sc-dlfnbm .ant-steps-item-wait > .ant-steps-item-container > .ant-steps-item-content > .ant-steps-item-description {
+    color: black;
+  }
+  .sc-dlfnbm .ant-steps-item-wait > .ant-steps-item-container > .ant-steps-item-content > .ant-steps-item-title {
+    text-transform: uppercase;
+  }
+
+   /* Steps prcess */
+
+  .sc-hKgILt .ant-steps-vertical > .ant-steps-item .ant-steps-item-content {
+    margin-bottom: 18px;
+  }
+  .sc-hKgILt .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+    color: ${applegreen};
+  }
+  .sc-hKgILt .ant-steps-item-finish .ant-steps-item-icon {
+    border-color: ${applegreen};
+  }
+  .sc-hKgILt .ant-steps-item-finish > .ant-steps-item-container > .ant-steps-item-tail::after {
+    background-color: ${applegreen};
+  }
+  .sc-hKgILt .ant-progress-inner:not(.ant-progress-circle-gradient) .ant-progress-circle-path {
+    stroke: ${applegreen};
+  }
+  .sc-hKgILt .ant-steps-item-process > .ant-steps-item-container > .ant-steps-item-icon {
+    background: ${applegreen};
+  }
+  .ant-steps-item-process .ant-steps-item-icon {
+    border-color: ${applegreen};
   }
 
 `;
