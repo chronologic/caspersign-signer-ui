@@ -1,5 +1,6 @@
 import React from "react";
 import { UseWalletProvider } from "use-wallet";
+import { QueryParamProvider } from "use-query-params";
 
 import { EthersProvider } from "../../contexts";
 import { CHAIN_ID, RPC_URL } from "../../env";
@@ -18,7 +19,9 @@ const Providers = ({ children }: IProps) => (
       },
     }}
   >
-    <EthersProvider>{children}</EthersProvider>
+    <EthersProvider>
+      <QueryParamProvider>{children}</QueryParamProvider>
+    </EthersProvider>
   </UseWalletProvider>
 );
 

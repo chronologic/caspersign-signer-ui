@@ -147,22 +147,22 @@ const Style = createGlobalStyle`
 
    /* Steps prcess */
 
-  .sc-hKgILt .ant-steps-vertical > .ant-steps-item .ant-steps-item-content {
+  .ant-steps-vertical > .ant-steps-item .ant-steps-item-content {
     margin-bottom: 18px;
   }
-  .sc-hKgILt .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+  .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
     color: ${applegreen};
   }
-  .sc-hKgILt .ant-steps-item-finish .ant-steps-item-icon {
+  .ant-steps-item-finish .ant-steps-item-icon {
     border-color: ${applegreen};
   }
-  .sc-hKgILt .ant-steps-item-finish > .ant-steps-item-container > .ant-steps-item-tail::after {
+  .ant-steps-item-finish > .ant-steps-item-container > .ant-steps-item-tail::after {
     background-color: ${applegreen};
   }
-  .sc-hKgILt .ant-progress-inner:not(.ant-progress-circle-gradient) .ant-progress-circle-path {
+  .ant-progress-inner:not(.ant-progress-circle-gradient) .ant-progress-circle-path {
     stroke: ${applegreen};
   }
-  .sc-hKgILt .ant-steps-item-process > .ant-steps-item-container > .ant-steps-item-icon {
+  .ant-steps-item-process > .ant-steps-item-container > .ant-steps-item-icon {
     background: ${applegreen};
   }
   .ant-steps-item-process .ant-steps-item-icon {
