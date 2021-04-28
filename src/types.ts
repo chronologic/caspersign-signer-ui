@@ -22,6 +22,7 @@ export interface DocumentSummary {
 
 export interface DocumentDetails extends DocumentSummary {
   createdByEmail: string;
+  createdByName: string;
   signatures: SignatureDetails[];
   hashes: string[];
   history: DocumentHistory[];

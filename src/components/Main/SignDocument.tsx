@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { Card, Layout, Typography, Button, Space, Steps, Modal } from "antd";
 
@@ -22,19 +22,6 @@ function SignDocument({ doc, loading }: IProps) {
     setIsModalVisible(true);
   };
 
-  const creator = useMemo(() => {
-    let emailOrName = doc?.createdByEmail;
-
-    doc?.signatures?.forEach((sig) => {
-      if (
-        sig.email === doc.createdByEmail ||
-        sig.hs.email === doc.createdByEmail
-      ) {
-        emailOrName = sig.hs.name || sig.name || emailOrName;
-      }
-    });
-  }, [doc]);
-
   return (
     <Layout>
       <Main>
@@ -53,8 +40,9 @@ function SignDocument({ doc, loading }: IProps) {
                   visibility: loading ? "hidden" : "visible",
                 }}
               >
-                {creator} (Creator) has requested that you additionally sign the
-                document onto the blockchain.
+                {doc?.createdByName || doc?.createdByEmail} (Creator) has
+                requested that you additionally sign the document onto the
+                blockchain.
               </Text>
               <br />
               <Button
