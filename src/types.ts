@@ -5,6 +5,12 @@ export interface IUser {
   balanceEth: string;
 }
 
+export interface TorusUserInfo {
+  email: string;
+  name: string;
+  verifier: string;
+}
+
 export enum DocumentStatus {
   OUT_FOR_SIGNATURE = "OUT_FOR_SIGNATURE",
   AWAITING_MY_SIGNATURE = "AWAITING_MY_SIGNATURE",
@@ -64,4 +70,35 @@ export interface SignatureDetails extends SignatureSummary {
     statusCode: string;
     signedAt: string;
   };
+}
+
+export interface SignatureInfo {
+  /** signer verifier (torus) */
+  v: string;
+  /** signer hashed email */
+  e: string;
+  /** recipient hashed email */
+  r: string;
+  /** signer hashed IP */
+  i: string;
+  /** timestamp */
+  t: number;
+  /** document hashes */
+  h: string[];
+  /** signer pubkey */
+  p: string;
+}
+
+export interface SignatureInfoSigned extends SignatureInfo {
+  /** signature */
+  s: string;
+}
+
+export interface SignerInfo {
+  documentUid: string;
+  signatureUid: string;
+  verifier: string;
+  email: string;
+  documentHashes: string[];
+  payload: string;
 }

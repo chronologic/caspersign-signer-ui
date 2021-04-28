@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useQueryParam, StringParam } from "use-query-params";
+import { Layout as AntLayout } from "antd";
 
 import { apiService } from "../../services";
 import { DocumentDetails } from "../../types";
+import Footer from "../Footer";
+import Header from "../Header";
 import SignDocument from "./SignDocument";
 
 function Main() {
@@ -26,7 +29,19 @@ function Main() {
     }
   }, [signatureId]);
 
-  return <SignDocument doc={doc as DocumentDetails} loading={loading} />;
+  return (
+    <>
+      <Header loading={loading} />
+      <AntLayout>
+        <SignDocument
+          signatureId={signatureId as string}
+          doc={doc as DocumentDetails}
+          loading={loading}
+        />
+      </AntLayout>
+      <Footer />
+    </>
+  );
 }
 
 export default Main;

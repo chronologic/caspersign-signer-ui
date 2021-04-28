@@ -1,26 +1,108 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
-import { Card, Layout, Typography, Button, Space, Steps, Modal } from "antd";
+import { Card, Layout, Typography, Button, Space } from "antd";
+import Torus from "@toruslabs/torus-embed";
+import { ethers } from "ethers";
 
 import shield from "../../img/shield.svg";
-import { DocumentDetails } from "../../types";
+import {
+  DocumentDetails,
+  SignatureInfo,
+  SignatureInfoSigned,
+  SignerInfo,
+  TorusUserInfo,
+} from "../../types";
 import { skyblue } from "../colors";
 import Spinner from "./Spinner";
+import { sha256hex, sleep } from "../../utils";
+import { VALIDATE_UI_URL } from "../../env";
+import { apiService, ipService } from "../../services";
+import SignatureModal from "./SignatureModal";
+import HowItWorks from "./HowItWorks";
 
 const { Title, Text } = Typography;
-const { Step } = Steps;
+
+const torus = new Torus({});
 
 interface IProps {
   doc: DocumentDetails;
+  signatureId: string;
   loading: boolean;
 }
 
-function SignDocument({ doc, loading }: IProps) {
+function SignDocument({ doc, signatureId, loading }: IProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [initializingTorus, setInitializingTorus] = useState(true);
+  const [currentStep, setCurrentStep] = useState(-1);
+  const [processing, setProcessing] = useState(false);
+  const [processingDone, setProcessingDone] = useState(false);
+  const initializing = initializingTorus || loading;
 
-  const showModal = () => {
+  const handleShowModal = useCallback(() => {
     setIsModalVisible(true);
-  };
+  }, []);
+
+  const handleSign = useCallback(async () => {
+    try {
+      setIsModalVisible(true);
+      setProcessing(true);
+      setCurrentStep(0);
+      await sleep(1000);
+      const [pk] = await torus.login({});
+      const userInfo = await torus.getUserInfo(
+        "Your name and email are required to sign the document"
+      );
+      setCurrentStep(1);
+      const wallet = new ethers.Wallet(pk);
+      const signatureInfo = await constructSignatureInfo(
+        wallet,
+        doc,
+        signatureId,
+        userInfo
+      );
+      console.log(signatureInfo);
+      const signedSignatureInfo = await signSignatureInfo(
+        wallet,
+        signatureInfo
+      );
+      console.log(signedSignatureInfo);
+      const signerInfo: SignerInfo = {
+        documentUid: doc.documentUid,
+        signatureUid: signatureId,
+        documentHashes: doc.hashes,
+        verifier: userInfo.verifier,
+        email: userInfo.email,
+        payload: JSON.stringify(signedSignatureInfo),
+      };
+      await sleep(500);
+      setCurrentStep(2);
+      console.log(signerInfo);
+      await apiService.sign(signerInfo);
+      await sleep(1000);
+      setCurrentStep(3);
+      setProcessingDone(true);
+    } finally {
+      setProcessing(false);
+    }
+  }, [doc, signatureId]);
+
+  const handleContinue = useCallback(() => {
+    setIsModalVisible(false);
+    window.location.href = `${VALIDATE_UI_URL}?hash=${doc.hashes[0]}`;
+  }, [doc]);
+
+  useEffect(() => {
+    initTorus();
+    async function initTorus() {
+      try {
+        await torus.init({ showTorusButton: false });
+      } catch (err) {
+        // ignore
+      } finally {
+        setInitializingTorus(false);
+      }
+    }
+  }, []);
 
   return (
     <Layout>
@@ -32,12 +114,12 @@ function SignDocument({ doc, loading }: IProps) {
             </ShieldIcon>
             <Title level={2}>Secure Your Document On The Blockchain!</Title>
             <Request>
-              {loading && <Spinner className="spinner" size={40} />}
+              {initializing && <Spinner className="spinner" size={40} />}
               <Text
                 type="secondary"
                 style={{
                   fontSize: "18px",
-                  visibility: loading ? "hidden" : "visible",
+                  visibility: initializing ? "hidden" : "visible",
                 }}
               >
                 {doc?.createdByName || doc?.createdByEmail} (Creator) has
@@ -53,69 +135,24 @@ function SignDocument({ doc, loading }: IProps) {
                   padding: "0 35px",
                   background: skyblue,
                   borderColor: skyblue,
-                  visibility: loading ? "hidden" : "visible",
+                  visibility: initializing ? "hidden" : "visible",
                 }}
-                onClick={showModal}
+                onClick={handleSign}
               >
                 Continue to sign
               </Button>
             </Request>
           </Space>
-          <Modal
-            title="Signing Process"
+          <SignatureModal
             visible={isModalVisible}
-            closable={false}
-            footer={[
-              <Button
-                key="link"
-                type="primary"
-                size="large"
-                style={{
-                  textAlign: "center",
-                  background: skyblue,
-                  borderColor: skyblue,
-                }}
-              >
-                Continue
-              </Button>,
-            ]}
-          >
-            <StepsProcess>
-              <Steps direction="vertical" current={1} percent={60}>
-                <Step title="Signing the document using your unique private key." />
-                <Step title="Creating a unique hash value for the signed document." />
-                <Step title="Timestamping signed document into blockchain." />
-              </Steps>
-            </StepsProcess>
-          </Modal>
+            currentStep={currentStep}
+            processing={processing}
+            done={processingDone}
+            onSign={handleSign}
+            onContinue={handleContinue}
+          />
         </Card>
-        <Space direction="vertical" size="large">
-          <Title level={3}>How it works</Title>
-          <HowItWorks>
-            <Steps direction="vertical" current={-1}>
-              <Step
-                title="Document secrecy"
-                description="We use the SHA 256 algorithm to compute a hash of your files.
-              This is done in your browser so the contents of your files
-              remain confidential."
-                className="stepLeft"
-              />
-              <Step
-                title="No chance of tampering"
-                description="We store the SHA 256 hash of your email, the SHA 256 hash of
-              your file and a timestamp on the Casper Blockchain."
-                className="stepRight"
-              />
-              <Step
-                title="Verification Tool"
-                description="Upload a signed document and easily verify its authenticity.
-                We’ll detect if the document has been modified after it was
-                signed."
-                className="stepLeft"
-              />
-            </Steps>
-          </HowItWorks>
-        </Space>
+        <HowItWorks />
       </Main>
     </Layout>
   );
@@ -128,34 +165,6 @@ const Request = styled.div`
     transform: translateX(-50%);
   }
 `;
-
-const HowItWorks = styled.div`
-  width: 800px;
-  margin: 0 auto;
-
-  .stepLeft {
-    margin-right: 48%;
-    text-align: right;
-
-    .ant-steps-item-icon {
-      float: right;
-      margin-right: 0;
-    }
-    .ant-steps-item-tail {
-      left: auto !important;
-      right: 16px;
-    }
-    .ant-steps-item-description {
-      margin-right: 15px;
-    }
-  }
-
-  .stepRight {
-    margin-left: 48%;
-  }
-`;
-
-const StepsProcess = styled.div``;
 
 const ShieldIcon = styled.div`
   display: block;
@@ -172,5 +181,41 @@ const Main = styled.div`
   margin-right: auto;
   margin-left: auto;
 `;
+
+async function constructSignatureInfo(
+  wallet: ethers.Wallet,
+  doc: DocumentDetails,
+  signatureId: string,
+  userInfo: TorusUserInfo
+): Promise<SignatureInfo> {
+  const signerEmail = userInfo.email;
+  const recipientEmail = doc.signatures.find(
+    (sig) => sig.signatureUid === signatureId
+  )?.email;
+  const ip = await ipService.getIp();
+
+  return {
+    v: userInfo.verifier,
+    e: await sha256hex(signerEmail as string),
+    r: await sha256hex(recipientEmail as string),
+    i: await sha256hex(ip),
+    t: new Date().getTime(),
+    h: doc.hashes,
+    p: wallet.address.toLowerCase(),
+  };
+}
+
+async function signSignatureInfo(
+  wallet: ethers.Wallet,
+  info: SignatureInfo
+): Promise<SignatureInfoSigned> {
+  const infoHash = await sha256hex(JSON.stringify(info));
+  const signature = await wallet.signMessage(infoHash);
+
+  return {
+    ...info,
+    s: signature.toString(),
+  };
+}
 
 export default SignDocument;

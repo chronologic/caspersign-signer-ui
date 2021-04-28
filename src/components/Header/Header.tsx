@@ -1,9 +1,12 @@
 import React from "react";
 import styled from "styled-components";
 import { Layout, Button } from "antd";
-import { skyblue } from "../colors";
 
-function Header() {
+interface IProps {
+  loading: boolean;
+}
+
+function Header({ loading }: IProps) {
   return (
     <Layout.Header>
       <HeaderContent>
@@ -22,9 +25,8 @@ function Header() {
             size="large"
             style={{
               padding: "0 35px",
-              background: skyblue,
-              borderColor: skyblue,
             }}
+            disabled={loading}
           >
             Next
           </Button>
