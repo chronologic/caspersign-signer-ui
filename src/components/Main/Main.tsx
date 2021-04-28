@@ -20,8 +20,32 @@ function Main() {
     window.location.href = `${VALIDATE_UI_URL}?hash=${param}`;
   }, [doc]);
 
+  const refreshHashes = useCallback(
+    async (docDetails: DocumentDetails, attempt = 0) => {
+      const newHashes = await apiService.getHashes(signatureId as string);
+
+      let timeoutId: NodeJS.Timeout;
+      if (JSON.stringify(newHashes) !== JSON.stringify(docDetails.hashes)) {
+        setDoc({
+          ...docDetails,
+          hashes: newHashes,
+        });
+      } else if (attempt < 10) {
+        timeoutId = setTimeout(
+          () => refreshHashes(docDetails, attempt + 1),
+          5000
+        );
+      }
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    },
+    [signatureId]
+  );
+
   useEffect(() => {
-    if (signatureId) {
+    if (signatureId && !doc) {
       getDetails();
     }
 
@@ -36,12 +60,14 @@ function Main() {
         );
         if (currentSignature && currentSignature.completed) {
           setAlreadySigned(true);
+        } else {
+          refreshHashes(docDetails);
         }
       } finally {
         setLoading(false);
       }
     }
-  }, [signatureId]);
+  }, [doc, refreshHashes, signatureId]);
 
   return (
     <>

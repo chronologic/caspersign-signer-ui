@@ -13,6 +13,11 @@ const api = {
 
     return data;
   },
+  async getHashes(signatureId: string): Promise<string[]> {
+    const { data } = await client.get(`/documents/${signatureId}/hashes`);
+
+    return data;
+  },
   async sign(info: SignerInfo): Promise<void> {
     await client.post(`/documents/${info.documentUid}/sign`, info);
   },
