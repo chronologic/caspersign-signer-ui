@@ -2,9 +2,13 @@ import axios from "axios";
 
 const api = {
   async getIp(): Promise<string> {
-    const { data } = await axios.get("https://ipapi.co/json/");
+    try {
+      const { data } = await axios.get("https://ipapi.co/json/");
 
-    return data.ip;
+      return data.ip;
+    } catch (e) {
+      return "";
+    }
   },
 };
 
