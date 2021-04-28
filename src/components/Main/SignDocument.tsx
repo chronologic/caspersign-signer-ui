@@ -15,7 +15,6 @@ import {
 import { skyblue } from "../colors";
 import Spinner from "./Spinner";
 import { sha256hex, sleep } from "../../utils";
-import { VALIDATE_UI_URL } from "../../env";
 import { apiService, ipService } from "../../services";
 import SignatureModal from "./SignatureModal";
 import HowItWorks from "./HowItWorks";
@@ -28,9 +27,17 @@ interface IProps {
   doc: DocumentDetails;
   signatureId: string;
   loading: boolean;
+  alreadySigned: boolean;
+  onContinue: () => void;
 }
 
-function SignDocument({ doc, signatureId, loading }: IProps) {
+function SignDocument({
+  doc,
+  signatureId,
+  loading,
+  alreadySigned,
+  onContinue,
+}: IProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [initializingTorus, setInitializingTorus] = useState(true);
   const [currentStep, setCurrentStep] = useState(-1);
@@ -38,8 +45,8 @@ function SignDocument({ doc, signatureId, loading }: IProps) {
   const [processingDone, setProcessingDone] = useState(false);
   const initializing = initializingTorus || loading;
 
-  const handleShowModal = useCallback(() => {
-    setIsModalVisible(true);
+  const handleCancelModal = useCallback(() => {
+    setIsModalVisible(false);
   }, []);
 
   const handleSign = useCallback(async () => {
@@ -60,12 +67,10 @@ function SignDocument({ doc, signatureId, loading }: IProps) {
         signatureId,
         userInfo
       );
-      console.log(signatureInfo);
       const signedSignatureInfo = await signSignatureInfo(
         wallet,
         signatureInfo
       );
-      console.log(signedSignatureInfo);
       const signerInfo: SignerInfo = {
         documentUid: doc.documentUid,
         signatureUid: signatureId,
@@ -76,9 +81,8 @@ function SignDocument({ doc, signatureId, loading }: IProps) {
       };
       await sleep(500);
       setCurrentStep(2);
-      console.log(signerInfo);
       await apiService.sign(signerInfo);
-      await sleep(1000);
+      await sleep(5000);
       setCurrentStep(3);
       setProcessingDone(true);
     } finally {
@@ -88,8 +92,8 @@ function SignDocument({ doc, signatureId, loading }: IProps) {
 
   const handleContinue = useCallback(() => {
     setIsModalVisible(false);
-    window.location.href = `${VALIDATE_UI_URL}?hash=${doc.hashes[0]}`;
-  }, [doc]);
+    onContinue();
+  }, [onContinue]);
 
   useEffect(() => {
     initTorus();
@@ -122,9 +126,11 @@ function SignDocument({ doc, signatureId, loading }: IProps) {
                   visibility: initializing ? "hidden" : "visible",
                 }}
               >
-                {doc?.createdByName || doc?.createdByEmail} (Creator) has
-                requested that you additionally sign the document onto the
-                blockchain.
+                {alreadySigned
+                  ? "Thank you for signing the document."
+                  : `${
+                      doc?.createdByName || doc?.createdByEmail
+                    } (Creator) has requested that you additionally sign the document onto the blockchain.`}
               </Text>
               <br />
               <Button
@@ -137,9 +143,9 @@ function SignDocument({ doc, signatureId, loading }: IProps) {
                   borderColor: skyblue,
                   visibility: initializing ? "hidden" : "visible",
                 }}
-                onClick={handleSign}
+                onClick={alreadySigned ? handleContinue : handleSign}
               >
-                Continue to sign
+                {alreadySigned ? "Continue" : "Continue to sign"}
               </Button>
             </Request>
           </Space>
@@ -150,6 +156,7 @@ function SignDocument({ doc, signatureId, loading }: IProps) {
             done={processingDone}
             onSign={handleSign}
             onContinue={handleContinue}
+            onCancel={handleCancelModal}
           />
         </Card>
         <HowItWorks />
@@ -188,10 +195,10 @@ async function constructSignatureInfo(
   signatureId: string,
   userInfo: TorusUserInfo
 ): Promise<SignatureInfo> {
-  const signerEmail = userInfo.email;
-  const recipientEmail = doc.signatures.find(
-    (sig) => sig.signatureUid === signatureId
-  )?.email;
+  const signerEmail = userInfo.email || "";
+  const recipientEmail =
+    doc.signatures.find((sig) => sig.signatureUid === signatureId)?.hs.email ||
+    "";
   const ip = await ipService.getIp();
 
   return {

@@ -20,6 +20,7 @@ interface IProps {
   done: boolean;
   onSign: () => void;
   onContinue: () => void;
+  onCancel: () => void;
 }
 
 function SignatureModal({
@@ -29,6 +30,7 @@ function SignatureModal({
   done,
   onSign,
   onContinue,
+  onCancel,
 }: IProps) {
   const handleClick = useCallback(() => {
     if (!processing && !done) {
@@ -51,8 +53,8 @@ function SignatureModal({
           style={{
             textAlign: "center",
           }}
-          disabled={processing}
-          onClick={onContinue}
+          disabled={processing || done}
+          onClick={onCancel}
         >
           Cancel
         </Button>,

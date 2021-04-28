@@ -1,12 +1,17 @@
-import React from "react";
+import React, { useCallback } from "react";
 import styled from "styled-components";
 import { Layout, Button } from "antd";
 
 interface IProps {
   loading: boolean;
+  onSkip: () => void;
 }
 
-function Header({ loading }: IProps) {
+function Header({ loading, onSkip }: IProps) {
+  const handleBack = useCallback(() => {
+    window.history.back();
+  }, []);
+
   return (
     <Layout.Header>
       <HeaderContent>
@@ -17,6 +22,7 @@ function Header({ loading }: IProps) {
             style={{
               padding: "0 35px",
             }}
+            onClick={handleBack}
           >
             Back
           </Button>
@@ -27,8 +33,9 @@ function Header({ loading }: IProps) {
               padding: "0 35px",
             }}
             disabled={loading}
+            onClick={onSkip}
           >
-            Next
+            Skip
           </Button>
         </NavButtons>
       </HeaderContent>
