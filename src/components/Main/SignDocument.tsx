@@ -15,7 +15,7 @@ import {
 import { skyblue } from "../colors";
 import Spinner from "./Spinner";
 import { sha256hex, sleep } from "../../utils";
-import { apiService, ipService } from "../../services";
+import { apiService } from "../../services";
 import SignatureModal from "./SignatureModal";
 import HowItWorks from "./HowItWorks";
 
@@ -199,7 +199,7 @@ async function constructSignatureInfo(
   const recipientEmail =
     doc.signatures.find((sig) => sig.signatureUid === signatureId)?.hs.email ||
     "";
-  const ip = await ipService.getIp();
+  const ip = await apiService.getIp();
 
   return {
     v: userInfo.verifier,

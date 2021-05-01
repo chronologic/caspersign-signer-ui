@@ -21,6 +21,11 @@ const api = {
   async sign(info: SignerInfo): Promise<void> {
     await client.post(`/documents/${info.documentUid}/sign`, info);
   },
+  async getIp(): Promise<string> {
+    const { data } = await client.get("/ip");
+
+    return data.ip;
+  },
 };
 
 export default api;
