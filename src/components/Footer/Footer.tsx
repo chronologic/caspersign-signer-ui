@@ -20,7 +20,7 @@ function Footer() {
         <div className="share-buttons">
           <a
             className="resp-sharing-button__link"
-            href="https://www.linkedin.com/"
+            href="https://www.linkedin.com/sharing/share-offsite/?url=https://app.caspersign.io"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -37,7 +37,7 @@ function Footer() {
           </a>
           <a
             className="resp-sharing-button__link"
-            href="https://facebook.com/"
+            href="https://www.facebook.com/sharer/sharer.php?u=https://app.caspersign.io"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -54,7 +54,7 @@ function Footer() {
           </a>
           <a
             className="resp-sharing-button__link"
-            href="https://twitter.com/"
+            href="https://twitter.com/intent/tweet?url=https://app.caspersign.io"
             target="_blank"
             rel="noopener noreferrer"
           >

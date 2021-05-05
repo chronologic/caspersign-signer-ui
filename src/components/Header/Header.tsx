@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import styled from "styled-components";
 import { Layout, Button } from "antd";
+import logo from "../../img/logo.svg";
 
 interface IProps {
   loading: boolean;
@@ -15,6 +16,9 @@ function Header({ loading, onNext }: IProps) {
   return (
     <Layout.Header>
       <HeaderContent>
+        <Logo>
+          <img src={logo} alt="logo" />
+        </Logo>
         <NavButtons>
           <Button
             type="text"
@@ -42,6 +46,10 @@ function Header({ loading, onNext }: IProps) {
     </Layout.Header>
   );
 }
+
+const Logo = styled.div`
+  width: 150px;
+`;
 
 const NavButtons = styled.div`
   margin-left: auto;
