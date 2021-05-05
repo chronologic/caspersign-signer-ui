@@ -228,7 +228,7 @@ async function constructSignatureInfo(
     documentHashes: doc.hashes,
     ipHash: await sha256hex(ip),
     originalDocumentHash: doc.originalHash,
-    otherSignatures: doc.signatures.map((sig) => sig.txHash),
+    otherSignatures: doc.signatures.map((sig) => sig.txHash).filter(Boolean),
     recipientHash: await sha256hex(recipientEmail as string),
     signerHash: await sha256hex(signerEmail as string),
     signerPubkey: wallet.address.toLowerCase(),
