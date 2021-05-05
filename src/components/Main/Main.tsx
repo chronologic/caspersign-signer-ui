@@ -16,6 +16,7 @@ function Main() {
   const [alreadySigned, setAlreadySigned] = useState(false);
 
   const handleContinue = useCallback(() => {
+    setCookie("postSign", "true");
     const param = doc?.hashes[0] || doc?.signatures[0].signatureUid;
     window.location.href = `${VALIDATE_UI_URL}?hash=${param}`;
   }, [doc]);
@@ -84,6 +85,19 @@ function Main() {
       <Footer />
     </>
   );
+}
+
+function setCookie(name: string, value = ""): void {
+  let domain = window.location.host;
+
+  const domainParts = domain.split(".");
+  if (domainParts.length > 2) {
+    domain = domainParts.slice(1).join(".");
+  } else if (domainParts.length === 1) {
+    domain = "";
+  }
+
+  document.cookie = `${name}=${value}; path=/; domain=${domain}`;
 }
 
 export default Main;
