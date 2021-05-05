@@ -1,113 +1,55 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import styled from "styled-components";
 import { Card, Layout, Typography, Button, Space } from "antd";
-import Torus from "@toruslabs/torus-embed";
-import { ethers } from "ethers";
 
 import shield from "../../img/shield.svg";
-import {
-  DocumentDetails,
-  SignatureInfo,
-  SignatureInfoSigned,
-  SignerInfo,
-  TorusUserInfo,
-} from "../../types";
 import { skyblue } from "../colors";
 import Spinner from "./Spinner";
-import { sha256hex, sleep } from "../../utils";
-import { apiService } from "../../services";
 import SignatureModal from "./SignatureModal";
 import HowItWorks from "./HowItWorks";
 
 const { Title, Text } = Typography;
 
-const torus = new Torus({});
-
 interface IProps {
-  doc: DocumentDetails;
-  signatureId: string;
-  loading: boolean;
+  creator: string;
+  initializing: boolean;
+  showModal: boolean;
   alreadySigned: boolean;
+  currentStep: number;
+  processing: boolean;
+  processingDone: boolean;
   onContinue: () => void;
+  onSign: () => void;
+  onCancel: () => void;
 }
 
 function SignDocument({
-  doc,
-  signatureId,
-  loading,
+  creator,
+  initializing,
+  showModal,
   alreadySigned,
+  currentStep,
+  processing,
+  processingDone,
+  onSign,
+  onCancel,
   onContinue,
 }: IProps) {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [initializingTorus, setInitializingTorus] = useState(true);
-  const [currentStep, setCurrentStep] = useState(-1);
-  const [processing, setProcessing] = useState(false);
-  const [processingDone, setProcessingDone] = useState(false);
-  const initializing = initializingTorus || loading;
-
-  const handleCancelModal = useCallback(() => {
-    setIsModalVisible(false);
-  }, []);
-
-  const handleSign = useCallback(async () => {
-    try {
-      setIsModalVisible(true);
-      setProcessing(true);
-      setCurrentStep(0);
-      await sleep(1000);
-      const [pk] = await torus.login({});
-      const userInfo = await torus.getUserInfo(
-        "Your name and email are required to sign the document"
-      );
-      setCurrentStep(1);
-      const wallet = new ethers.Wallet(pk);
-      const ip = await apiService.getIp();
-      const signatureInfo = await constructSignatureInfo(
-        wallet,
-        doc,
-        signatureId,
-        ip,
-        userInfo
-      );
-      const signedSignatureInfo = await signSignatureInfo(
-        wallet,
-        signatureInfo
-      );
-      const signerInfo: SignerInfo = {
-        documentUid: doc.documentUid,
-        signatureUid: signatureId,
-        verifier: userInfo.verifier,
-        email: userInfo.email,
-        ip,
-      };
-      await sleep(500);
-      setCurrentStep(2);
-      await apiService.sign(signerInfo, signedSignatureInfo);
-      await sleep(5000);
-      setCurrentStep(3);
-      setProcessingDone(true);
-    } finally {
-      setProcessing(false);
+  const message = useMemo(() => {
+    if (alreadySigned) {
+      return "Thank you for signing the document.";
     }
-  }, [doc, signatureId]);
 
-  const handleContinue = useCallback(() => {
-    setIsModalVisible(false);
-    onContinue();
-  }, [onContinue]);
-
-  useEffect(() => {
-    initTorus();
-    async function initTorus() {
-      try {
-        await torus.init({ showTorusButton: false });
-      } catch (err) {
-        // ignore
-      } finally {
-        setInitializingTorus(false);
-      }
-    }
-  }, []);
+    return (
+      <span>
+        {creator} has requested that you additionally sign the document onto the
+        blockchain.
+        <br />
+        To proceed, just click the button below and authenticate using any of
+        the options you will be presented with.
+      </span>
+    );
+  }, [alreadySigned, creator]);
 
   return (
     <Layout>
@@ -127,11 +69,7 @@ function SignDocument({
                   visibility: initializing ? "hidden" : "visible",
                 }}
               >
-                {alreadySigned
-                  ? "Thank you for signing the document."
-                  : `${
-                      doc?.createdByName || doc?.createdByEmail
-                    } (Creator) has requested that you additionally sign the document onto the blockchain.`}
+                {message}
               </Text>
               <br />
               <Button
@@ -144,20 +82,20 @@ function SignDocument({
                   borderColor: skyblue,
                   visibility: initializing ? "hidden" : "visible",
                 }}
-                onClick={alreadySigned ? handleContinue : handleSign}
+                onClick={alreadySigned ? onContinue : onSign}
               >
                 {alreadySigned ? "Continue" : "Continue to sign"}
               </Button>
             </Request>
           </Space>
           <SignatureModal
-            visible={isModalVisible}
+            visible={showModal}
             currentStep={currentStep}
             processing={processing}
             done={processingDone}
-            onSign={handleSign}
-            onContinue={handleContinue}
-            onCancel={handleCancelModal}
+            onSign={onSign}
+            onContinue={onContinue}
+            onCancel={onCancel}
           />
         </Card>
         <HowItWorks />
@@ -189,43 +127,5 @@ const Main = styled.div`
   margin-right: auto;
   margin-left: auto;
 `;
-
-async function constructSignatureInfo(
-  wallet: ethers.Wallet,
-  doc: DocumentDetails,
-  signatureId: string,
-  ip: string,
-  userInfo: TorusUserInfo
-): Promise<SignatureInfo> {
-  const signerEmail = userInfo.email || "";
-  const recipientEmail =
-    doc.signatures.find((sig) => sig.signatureUid === signatureId)
-      ?.recipientEmail || "";
-
-  return {
-    verifier: userInfo.verifier,
-    documentHashes: doc.hashes,
-    ipHash: await sha256hex(ip),
-    originalDocumentHash: doc.originalHash,
-    otherSignatures: doc.signatures.map((sig) => sig.txHash),
-    recipientHash: await sha256hex(recipientEmail as string),
-    signerHash: await sha256hex(signerEmail as string),
-    signerPubkey: wallet.address.toLowerCase(),
-    timestamp: new Date().getTime(),
-  };
-}
-
-async function signSignatureInfo(
-  wallet: ethers.Wallet,
-  info: SignatureInfo
-): Promise<SignatureInfoSigned> {
-  const infoHash = await sha256hex(JSON.stringify(info));
-  const signature = await wallet.signMessage(infoHash);
-
-  return {
-    ...info,
-    signature: signature.toString(),
-  };
-}
 
 export default SignDocument;

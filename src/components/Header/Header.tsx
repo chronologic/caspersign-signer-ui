@@ -4,10 +4,10 @@ import { Layout, Button } from "antd";
 
 interface IProps {
   loading: boolean;
-  onSkip: () => void;
+  onNext: () => void;
 }
 
-function Header({ loading, onSkip }: IProps) {
+function Header({ loading, onNext }: IProps) {
   const handleBack = useCallback(() => {
     window.history.back();
   }, []);
@@ -33,9 +33,9 @@ function Header({ loading, onSkip }: IProps) {
               padding: "0 35px",
             }}
             disabled={loading}
-            onClick={onSkip}
+            onClick={onNext}
           >
-            Skip
+            Next
           </Button>
         </NavButtons>
       </HeaderContent>
