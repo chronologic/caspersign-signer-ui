@@ -61,10 +61,12 @@ function SignDocument({
       );
       setCurrentStep(1);
       const wallet = new ethers.Wallet(pk);
+      const ip = await apiService.getIp();
       const signatureInfo = await constructSignatureInfo(
         wallet,
         doc,
         signatureId,
+        ip,
         userInfo
       );
       const signedSignatureInfo = await signSignatureInfo(
@@ -74,14 +76,13 @@ function SignDocument({
       const signerInfo: SignerInfo = {
         documentUid: doc.documentUid,
         signatureUid: signatureId,
-        documentHashes: doc.hashes,
         verifier: userInfo.verifier,
         email: userInfo.email,
-        payload: JSON.stringify(signedSignatureInfo),
+        ip,
       };
       await sleep(500);
       setCurrentStep(2);
-      await apiService.sign(signerInfo);
+      await apiService.sign(signerInfo, signedSignatureInfo);
       await sleep(5000);
       setCurrentStep(3);
       setProcessingDone(true);
@@ -193,22 +194,24 @@ async function constructSignatureInfo(
   wallet: ethers.Wallet,
   doc: DocumentDetails,
   signatureId: string,
+  ip: string,
   userInfo: TorusUserInfo
 ): Promise<SignatureInfo> {
   const signerEmail = userInfo.email || "";
   const recipientEmail =
-    doc.signatures.find((sig) => sig.signatureUid === signatureId)?.hs.email ||
-    "";
-  const ip = await apiService.getIp();
+    doc.signatures.find((sig) => sig.signatureUid === signatureId)
+      ?.recipientEmail || "";
 
   return {
-    v: userInfo.verifier,
-    e: await sha256hex(signerEmail as string),
-    r: await sha256hex(recipientEmail as string),
-    i: await sha256hex(ip),
-    t: new Date().getTime(),
-    h: doc.hashes,
-    p: wallet.address.toLowerCase(),
+    verifier: userInfo.verifier,
+    documentHashes: doc.hashes,
+    ipHash: await sha256hex(ip),
+    originalDocumentHash: doc.originalHash,
+    otherSignatures: doc.signatures.map((sig) => sig.txHash),
+    recipientHash: await sha256hex(recipientEmail as string),
+    signerHash: await sha256hex(signerEmail as string),
+    signerPubkey: wallet.address.toLowerCase(),
+    timestamp: new Date().getTime(),
   };
 }
 
@@ -221,7 +224,7 @@ async function signSignatureInfo(
 
   return {
     ...info,
-    s: signature.toString(),
+    signature: signature.toString(),
   };
 }
 

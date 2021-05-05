@@ -1,7 +1,7 @@
 import axios from "axios";
 
 import { API_URL } from "../env";
-import { DocumentDetails, SignerInfo } from "../types";
+import { DocumentDetails, SignatureInfo, SignerInfo } from "../types";
 
 const client = axios.create({
   baseURL: API_URL,
@@ -18,8 +18,14 @@ const api = {
 
     return data;
   },
-  async sign(info: SignerInfo): Promise<void> {
-    await client.post(`/documents/${info.documentUid}/sign`, info);
+  async sign(
+    signerInfo: SignerInfo,
+    signatureInfo: SignatureInfo
+  ): Promise<void> {
+    await client.post(`/documents/${signerInfo.documentUid}/sign`, {
+      signerInfo,
+      signatureInfo,
+    });
   },
   async getIp(): Promise<string> {
     const { data } = await client.get("/ip");

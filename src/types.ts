@@ -23,6 +23,7 @@ export interface DocumentSummary {
   title: string;
   status: DocumentStatus;
   createdAt: string;
+  originalHash: string;
   signatures: SignatureSummary[];
 }
 
@@ -47,6 +48,7 @@ export interface DocumentHistory {
   timestamp?: string;
   ip?: string;
   email: string;
+  recipientEmail: string;
   description: string;
   txHash?: string;
 }
@@ -55,6 +57,7 @@ export interface SignatureSummary {
   signatureUid: string;
   ip: string;
   email: string;
+  recipientEmail: string;
   name: string;
   completed: boolean;
   payload?: string;
@@ -72,33 +75,26 @@ export interface SignatureDetails extends SignatureSummary {
   };
 }
 
-export interface SignatureInfo {
-  /** signer verifier (torus) */
-  v: string;
-  /** signer hashed email */
-  e: string;
-  /** recipient hashed email */
-  r: string;
-  /** signer hashed IP */
-  i: string;
-  /** timestamp */
-  t: number;
-  /** document hashes */
-  h: string[];
-  /** signer pubkey */
-  p: string;
-}
-
-export interface SignatureInfoSigned extends SignatureInfo {
-  /** signature */
-  s: string;
-}
-
 export interface SignerInfo {
   documentUid: string;
   signatureUid: string;
   verifier: string;
   email: string;
+  ip: string;
+}
+
+export interface SignatureInfo {
+  verifier: string;
+  signerHash: string;
+  recipientHash: string;
+  ipHash: string;
+  timestamp: number;
+  originalDocumentHash: string;
+  otherSignatures: string[];
   documentHashes: string[];
-  payload: string;
+  signerPubkey: string;
+}
+
+export interface SignatureInfoSigned extends SignatureInfo {
+  signature: string;
 }
