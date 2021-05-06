@@ -7,6 +7,7 @@ import {
   DeploymentUnitOutlined,
   CheckCircleOutlined,
   LoadingOutlined,
+  SmileOutlined,
 } from "@ant-design/icons";
 
 import { applegreen, skyblue } from "../colors";
@@ -101,6 +102,15 @@ function SignatureModal({
               2,
               processing,
               <DeploymentUnitOutlined style={{ color: skyblue }} />
+            )}
+          />
+          <Step
+            title="Done!"
+            icon={getStatusIcon(
+              currentStep,
+              3,
+              processing,
+              <SmileOutlined style={{ color: skyblue }} />
             )}
           />
         </Steps>

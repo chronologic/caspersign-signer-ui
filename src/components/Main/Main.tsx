@@ -73,7 +73,7 @@ function Main() {
       await apiService.sign(signerInfo, signedSignatureInfo);
       torus.logout();
       await sleep(5000);
-      setCurrentStep(3);
+      setCurrentStep(4);
       setProcessingDone(true);
     } finally {
       setProcessing(false);
