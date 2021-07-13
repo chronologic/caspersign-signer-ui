@@ -6,7 +6,17 @@ This repository holds the UI for signing documents onto the Casper blockchain.
 
 The live version can be found [here](https://sign.caspersign.io/).
 
-## Environment variables
+## Project overview
+
+The CasperSign project consists of the following repositories:
+
+https://github.com/chronologic/caspersign-app-ui
+https://github.com/chronologic/caspersign-validator-ui
+https://github.com/chronologic/caspersign-signer-ui (this repository)
+https://github.com/chronologic/caspersign-server
+https://github.com/chronologic/caspersign-contract
+
+## 🔧 Environment variables
 
 This repo uses [`dotenv`](https://www.npmjs.com/package/dotenv) to load environment variables.
 
