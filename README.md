@@ -6,6 +6,8 @@ This repository holds the UI for signing documents onto the Casper blockchain.
 
 The live version can be found [here](https://sign.caspersign.io/).
 
+Featured as the "First Casper-Native Dapp" https://blog.casperlabs.io/the-first-casper-native-dapp-is-here-caspersign-allows-users-to-sign-contracts-confidentially-securely/
+
 ## Project overview
 
 The CasperSign project consists of the following repositories:
