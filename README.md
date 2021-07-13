@@ -12,11 +12,11 @@ Featured as the "First Casper-Native Dapp" https://blog.casperlabs.io/the-first-
 
 The CasperSign project consists of the following repositories:
 
-https://github.com/chronologic/caspersign-app-ui
-https://github.com/chronologic/caspersign-validator-ui
-https://github.com/chronologic/caspersign-signer-ui (this repository)
-https://github.com/chronologic/caspersign-server
-https://github.com/chronologic/caspersign-contract
+- https://github.com/chronologic/caspersign-app-ui
+- https://github.com/chronologic/caspersign-validator-ui
+- https://github.com/chronologic/caspersign-signer-ui (this repository)
+- https://github.com/chronologic/caspersign-server
+- https://github.com/chronologic/caspersign-contract
 
 ## 🔧 Environment variables
 
